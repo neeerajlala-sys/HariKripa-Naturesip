@@ -1,0 +1,47 @@
+# NatureSip: Application Architecture & Structure
+
+This document outlines the technical design and organizational structure of the NatureSip premium application.
+
+## 1. Technical Stack
+- **Frontend Framework:** [Vite](https://vitejs.dev/) + [React](https://reactjs.org/) (JavaScript)
+- **Styling:** Vanilla CSS 3 with HSL variables for dynamic theme management.
+- **Animations:** [Framer Motion](https://www.framer.com/motion/) for premium micro-interactions and page transitions.
+- **Icons:** [Lucide React](https://lucide.dev/) for sleek, consistent iconography.
+- **Typography:** 
+  - Primary: *Outfit* (Aesthetic & Modern)
+  - Secondary: *Inter* (Legibility)
+
+## 2. Design Principles
+- **Visual Excellence:** Use of high-quality media, glassmorphism, and smooth gradients.
+- **Responsive Design:** Mobile-first approach with fluid layouts.
+- **Performance:** Optimized media loading (Lazy loading, WebP format where possible).
+- **Branding:** Consistent use of Forest Green (#2D5A27) and Gold accents to convey a premium organic feel.
+
+## 3. Directory Structure
+```text
+naturesip_media/
+├── public/                 # Static assets
+├── src/
+│   ├── assets/
+│   │   ├── media/          # Downloaded product photos/videos
+│   │   └── styles/         # Global CSS and themes
+│   ├── components/         # Reusable UI components
+│   │   ├── PremiumHeader/
+│   │   ├── ProductCard/
+│   │   └── ProcessTimeline/
+│   ├── sections/           # High-level page sections
+│   │   ├── Hero/
+│   │   ├── Catalog/
+│   │   └── Manufacturing/
+│   ├── App.jsx             # Main application logic
+│   └── main.jsx            # Entry point
+├── docs/                   # Production/Manufacturing documentation
+├── package.json
+└── vite.config.js
+```
+
+## 4. End-to-End Planning
+- **Phase 1: Asset Procurement** (Fetching media from harikripa-naturesip.lovable.app)
+- **Phase 2: Core UI Development** (Implementing the Premium Design System)
+- **Phase 3: Integration** (Populating components with real product data and media)
+- **Phase 4: Optimization** (Final polish and performance tuning)

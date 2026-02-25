@@ -1,0 +1,53 @@
+# NatureSip: Manufacturing & Production Process
+
+This document outlines the end-to-end process for converting fresh fruits and vegetables into premium powders and tablets.
+
+## 1. Sourcing & Raw Material Intake
+- **Origin:** Direct-from-farm procurement in Uttar Pradesh.
+- **Criteria:** Pesticide-free, peak ripeness, and high nutrient density.
+- **Measurement:** Incoming batches are measured by weight (kg) and Brix level (for fruits) to ensure sugar content consistency.
+
+## 2. Pre-Processing
+- **Cleaning:** Multi-stage ultrasonic washing to remove surface contaminants.
+- **Peeling/Seeding:** Automated removal of non-edible parts (e.g., mango skins, jamun seeds).
+- **Slicing:** Standardized thickness (2-3mm) for uniform drying.
+
+## 3. Flash Drying Technology (Core Process)
+NatureSip utilizes high-speed vacuum flash drying to preserve 95% of natural enzymes and vitamins.
+- **Temperature:** Low-temperature range (40°C - 55°C) to prevent thermal degradation.
+- **Duration:** 15-30 seconds (Flash cycle).
+- **Result:** Moisture content reduced to <3%.
+
+## 4. Fine Milling & Sweetening
+- **Milling:** Micronization into ultra-fine powder (approx. 50-100 microns).
+- **Sweetening:** Manual/Automated mixing with **Dry Honey Powder**. 
+  - *Ratio:* 95% Fruit Powder : 5% Dry Honey Powder (Adjustable per fruit type).
+- **Agglomeration:** (Optional) Process for improved solubility.
+
+## 5. Compression (Tablets)
+For the tablet line (e.g., Amla, Jamun):
+- **Pressure:** 10-15 kN compression force.
+- **Binder:** Zero artificial binders; Uses natural fruit fiber as a structural matrix.
+
+## 6. Quality Assurance (Q&A)
+- **Lab Testing:** Each batch is tested for:
+  - Microbial count (CFU/g).
+  - Heavy metals (Pb, As, Hg).
+  - Ingredient purity.
+- **Shelf Life:** 12-18 months in vacuum-sealed packaging.
+
+## 7. Packaging & Logistics
+- **Vessel:** Airtight glass or PET jars with aluminum induction seal.
+- **Storage:** Cool, dry place avoid direct sunlight.
+
+---
+
+### Manufacturing Planning Table
+
+| Component | Measurement Unit | Target |
+| :--- | :--- | :--- |
+| Raw Material Moisture | % | 75% - 90% |
+| Post-Flash Moisture | % | < 3.5% |
+| Particle Size | Microns | 75μm |
+| Mixing Uniformity | % | > 98% |
+| Packaging Seal | PSI | 15 (Leak Test) |
