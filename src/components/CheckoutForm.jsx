@@ -46,11 +46,16 @@ const CheckoutForm = ({ onSubmit, onCancel, amount, items = [] }) => {
                     <input type="radio" value="regular" {...register('orderType')} style={{ display: 'none' }} />
                     Full Pack
                 </label>
-                <label style={{ flex: 1, cursor: 'pointer', textAlign: 'center', padding: '10px', borderRadius: '12px', background: orderType === 'sample' ? 'white' : 'transparent', boxShadow: orderType === 'sample' ? '0 2px 10px rgba(0,0,0,0.05)' : 'none', fontWeight: 600, transition: '0.3s' }}>
-                    <input type="radio" value="sample" {...register('orderType')} style={{ display: 'none' }} />
+                <label style={{ opacity: items.some(i => i.size !== '100g' && i.size !== '60 Tabs') ? 0.4 : 1, flex: 1, cursor: items.some(i => i.size !== '100g' && i.size !== '60 Tabs') ? 'not-allowed' : 'pointer', textAlign: 'center', padding: '10px', borderRadius: '12px', background: orderType === 'sample' ? 'white' : 'transparent', boxShadow: orderType === 'sample' ? '0 2px 10px rgba(0,0,0,0.05)' : 'none', fontWeight: 600, transition: '0.3s' }}>
+                    <input type="radio" value="sample" disabled={items.some(i => i.size !== '100g' && i.size !== '60 Tabs')} {...register('orderType')} style={{ display: 'none' }} />
                     Sample Pack
                 </label>
             </div>
+            {items.some(i => i.size !== '100g' && i.size !== '60 Tabs') && (
+                <p style={{ fontSize: '0.75rem', color: '#ff4d4f', textAlign: 'center', marginTop: '-10px', marginBottom: '15px' }}>
+                    * Samples are only available for our smallest size packs.
+                </p>
+            )}
 
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div style={{ marginBottom: '15px' }}>
