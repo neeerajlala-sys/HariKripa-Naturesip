@@ -14,13 +14,21 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "canvas-confetti": "^1.9.4",
+    "compression": "^1.8.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express-rate-limit": "^8.2.1",
     "framer-motion": "^11.0.8",
+    "helmet": "^8.1.0",
+    "hpp": "^0.2.3",
     "lucide-react": "^0.575.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.71.2",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.13.1",
+    "xss": "^1.0.15",
     "zod": "^4.3.6"
   },
   "devDependencies": {
