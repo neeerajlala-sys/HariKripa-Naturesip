@@ -204,7 +204,7 @@ function App() {
             <Toaster position="top-right" reverseOrder={false} />
             <div className="grain-overlay" />
 
-            <header className="glass-effect" style={{ position: 'fixed', width: '100%', zIndex: 100, padding: '15px 0' }}>
+            <header className="glass-effect" style={{ position: 'sticky', top: 0, width: '100%', zIndex: 100, padding: '20px 0' }}>
                 <div className="premium-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <motion.div
                         whileHover={{ scale: 1.05 }}
@@ -240,9 +240,9 @@ function App() {
 
             {/* Hero Section */}
             <section style={{
-                minHeight: '100vh',
-                paddingTop: '120px',
-                background: `radial-gradient(circle at top right, rgba(45, 90, 39, 0.05), transparent), url('/media/hero-bg.jpg')`,
+                minHeight: '90vh',
+                paddingTop: '80px',
+                background: `radial-gradient(circle at top right, rgba(45, 140, 90, 0.05), transparent), #ffffff`,
                 backgroundSize: 'cover',
                 display: 'flex',
                 alignItems: 'center',
@@ -276,11 +276,11 @@ function App() {
                                 }}>
                                     Explore Collection
                                 </button>
-                                <div style={{ display: 'flex', background: 'white', borderRadius: '50px', padding: '5px 5px 5px 20px', border: '1px solid #eee', boxShadow: '0 5px 15px rgba(0,0,0,0.05)', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', background: 'white', borderRadius: '12px', padding: '6px', border: '1px solid var(--color-border)', boxShadow: '0 2px 10px rgba(0,0,0,0.02)', alignItems: 'center' }}>
                                     <input
                                         type="text"
-                                        placeholder="Order ID (e.g. NS-XXX)"
-                                        style={{ border: 'none', outline: 'none', fontSize: '0.85rem', width: '150px' }}
+                                        placeholder="Order ID"
+                                        style={{ border: 'none', outline: 'none', fontSize: '0.9rem', width: '150px', paddingLeft: '10px' }}
                                         onKeyPress={(e) => {
                                             if (e.key === 'Enter') {
                                                 const order = orders.find(o => o.id === e.target.value.toUpperCase());
@@ -292,7 +292,7 @@ function App() {
                                             }
                                         }}
                                     />
-                                    <button style={{ background: 'var(--color-forest)', color: 'white', border: 'none', borderRadius: '50px', padding: '8px 15px', cursor: 'pointer', fontSize: '0.8rem' }}>Track</button>
+                                    <button style={{ background: 'var(--color-text)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>Track</button>
                                 </div>
                             </div>
                         </motion.div>
@@ -350,21 +350,16 @@ function App() {
                         {filteredProducts.map(product => (
                             <motion.div
                                 key={product.id}
+                                className="lovable-card"
                                 variants={itemVariants}
-                                whileHover={{ y: -10 }}
                                 onMouseEnter={() => setHoveredProduct(product.id)}
                                 onMouseLeave={() => setHoveredProduct(null)}
-                                style={{
-                                    background: 'var(--color-cream)',
-                                    borderRadius: '30px',
-                                    overflow: 'hidden',
-                                    boxShadow: '0 10px 30px rgba(0,0,0,0.05)'
-                                }}
+                                style={{ overflow: 'hidden' }}
                             >
-                                <div style={{ height: '250px', overflow: 'hidden' }}>
-                                    <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <div style={{ height: '260px', overflow: 'hidden', padding: '16px', paddingBottom: '0' }}>
+                                    <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }} />
                                 </div>
-                                <div style={{ padding: '25px' }}>
+                                <div style={{ padding: '24px' }}>
                                     <h3 style={{ color: 'var(--color-forest)', marginBottom: '10px' }}>{sanitize(product.name)}</h3>
                                     <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '20px' }}>{sanitize(product.description)}</p>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
@@ -415,8 +410,8 @@ function App() {
                 <div className="premium-container">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '80px', flexWrap: 'wrap-reverse' }}>
                         <div style={{ flex: '1 1 400px' }}>
-                            <div className="glass-effect" style={{ padding: '10px', borderRadius: '40px', background: 'rgba(255,255,255,0.1)' }}>
-                                <video autoPlay muted loop playsInline style={{ width: '100%', borderRadius: '30px', display: 'block' }}>
+                            <div className="lovable-card" style={{ padding: '8px', background: 'white' }}>
+                                <video autoPlay muted loop playsInline style={{ width: '100%', borderRadius: '16px', display: 'block' }}>
                                     <source src="/media/kadhai-gravy.mp4" type="video/mp4" />
                                 </video>
                             </div>
@@ -456,15 +451,16 @@ function App() {
                         exit={{ opacity: 0, y: 50 }}
                         style={{
                             position: 'fixed',
-                            bottom: '20px',
-                            right: '20px',
-                            width: '400px',
+                            bottom: '24px',
+                            right: '24px',
+                            width: '420px',
                             maxHeight: '80vh',
                             background: 'white',
-                            borderRadius: '30px',
-                            boxShadow: '0 20px 50px rgba(0,0,0,0.2)',
+                            borderRadius: 'var(--radius-xl)',
+                            boxShadow: 'var(--shadow-hover)',
+                            border: '1px solid var(--color-border)',
                             zIndex: 1000,
-                            padding: '25px',
+                            padding: '28px',
                             overflowY: 'auto'
                         }}
                     >
