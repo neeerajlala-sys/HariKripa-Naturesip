@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Leaf, Droplets, FlaskConical, Shovel, ChevronRight, Play, Database, Activity, Star, ShieldCheck, Zap, LogOut, Package, ClipboardList, CheckCircle, Truck, Info, BarChart3, Users, TrendingUp, ShoppingCart, Eye } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
@@ -54,15 +54,18 @@ function App() {
 
     useEffect(() => {
         trackPageView('Home');
+    }, []);
+
+    useEffect(() => {
         localStorage.setItem('ns_orders', JSON.stringify(orders));
         localStorage.setItem('ns_cart', JSON.stringify(cart));
     }, [orders, cart]);
 
-    const filteredProducts = activeCategory === 'All'
+    const filteredProducts = useMemo(() => activeCategory === 'All'
         ? productsData
-        : productsData.filter(p => p.category === activeCategory);
+        : productsData.filter(p => p.category === activeCategory), [activeCategory]);
 
-    const categories = ['All', ...new Set(productsData.map(p => p.category))];
+    const categories = useMemo(() => ['All', ...new Set(productsData.map(p => p.category))], []);
 
     const handleLogin = (e) => {
         e.preventDefault();
@@ -357,7 +360,7 @@ function App() {
                                 style={{ overflow: 'hidden' }}
                             >
                                 <div style={{ height: '260px', overflow: 'hidden', padding: '16px', paddingBottom: '0' }}>
-                                    <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }} />
+                                    <img src={product.image} alt={product.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }} />
                                 </div>
                                 <div style={{ padding: '24px' }}>
                                     <h3 style={{ color: 'var(--color-forest)', marginBottom: '10px' }}>{sanitize(product.name)}</h3>
@@ -411,7 +414,7 @@ function App() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '80px', flexWrap: 'wrap-reverse' }}>
                         <div style={{ flex: '1 1 400px' }}>
                             <div className="lovable-card" style={{ padding: '8px', background: 'white' }}>
-                                <video autoPlay muted loop playsInline style={{ width: '100%', borderRadius: '16px', display: 'block' }}>
+                                <video autoPlay muted loop playsInline preload="metadata" style={{ width: '100%', borderRadius: '16px', display: 'block' }}>
                                     <source src="/media/kadhai-gravy.mp4" type="video/mp4" />
                                 </video>
                             </div>
@@ -611,7 +614,7 @@ function App() {
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '60vh', overflowY: 'auto', marginBottom: '30px', paddingRight: '10px' }}>
                                         {cart.map(item => (
                                             <div key={item.id} style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                                                <img src={item.image} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }} />
+                                                <img src={item.image} loading="lazy" style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }} />
                                                 <div style={{ flex: 1 }}>
                                                     <h4 style={{ fontSize: '0.9rem' }}>{item.name} ({item.size})</h4>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px' }}>
