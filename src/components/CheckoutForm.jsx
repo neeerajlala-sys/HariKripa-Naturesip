@@ -13,7 +13,7 @@ const schema = z.object({
     orderType: z.enum(['regular', 'sample']).default('regular'),
 });
 
-const CheckoutForm = ({ onSubmit, onCancel, amount }) => {
+const CheckoutForm = ({ onSubmit, onCancel, amount, items = [] }) => {
     const { register, handleSubmit, watch, formState: { errors } } = useForm({
         resolver: zodResolver(schema),
         defaultValues: { orderType: 'regular' }
@@ -22,8 +22,24 @@ const CheckoutForm = ({ onSubmit, onCancel, amount }) => {
     const orderType = watch('orderType');
 
     return (
-        <div className="checkout-form">
+        <div className="checkout-form" style={{ maxHeight: '85vh', overflowY: 'auto', padding: '10px' }}>
             <h2 style={{ marginBottom: '10px', color: 'var(--color-forest)', textAlign: 'center' }}>Secure Checkout</h2>
+
+            <div style={{ background: '#f8f9fa', padding: '15px', borderRadius: '20px', marginBottom: '20px' }}>
+                <h4 style={{ fontSize: '0.85rem', marginBottom: '10px', opacity: 0.6 }}>Order Summary</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {items.map((item, idx) => (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
+                            <span>{item.name} <span style={{ opacity: 0.5 }}>x {item.quantity || 1}</span></span>
+                            <span style={{ fontWeight: 700 }}>₹{(item.quantity || 1) * 374}</span>
+                        </div>
+                    ))}
+                </div>
+                <div style={{ borderTop: '1px solid #ddd', marginTop: '10px', paddingTop: '10px', display: 'flex', justifyContent: 'space-between', fontWeight: 800 }}>
+                    <span>Total (Incl. Discount)</span>
+                    <span style={{ color: 'var(--color-emerald)' }}>₹{orderType === 'sample' ? 0 : amount}</span>
+                </div>
+            </div>
 
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', background: '#f8f9fa', padding: '5px', borderRadius: '15px' }}>
                 <label style={{ flex: 1, cursor: 'pointer', textAlign: 'center', padding: '10px', borderRadius: '12px', background: orderType === 'regular' ? 'white' : 'transparent', boxShadow: orderType === 'regular' ? '0 2px 10px rgba(0,0,0,0.05)' : 'none', fontWeight: 600, transition: '0.3s' }}>
@@ -35,10 +51,6 @@ const CheckoutForm = ({ onSubmit, onCancel, amount }) => {
                     Sample Pack
                 </label>
             </div>
-
-            <p style={{ textAlign: 'center', marginBottom: '30px', color: '#666' }}>
-                Amount to Pay: <span style={{ fontWeight: 800, color: 'var(--color-emerald)' }}>₹{orderType === 'sample' ? 0 : amount}</span>
-            </p>
 
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div style={{ marginBottom: '15px' }}>

@@ -95,6 +95,23 @@ h4 {
   box-shadow: 0 12px 25px rgba(45, 90, 39, 0.3);
 }
 
+.btn-outline {
+  background: white;
+  color: var(--color-forest);
+  padding: 12px 32px;
+  border-radius: 50px;
+  border: 2px solid var(--color-forest);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: var(--font-primary);
+}
+
+.btn-outline:hover {
+  background: var(--color-forest);
+  color: white;
+}
+
 .checkout-form input:focus {
   outline: none;
   border-color: var(--color-emerald) !important;

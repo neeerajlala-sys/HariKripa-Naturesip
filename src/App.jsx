@@ -30,6 +30,8 @@ function App() {
     const [showCheckout, setShowCheckout] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [orders, setOrders] = useState(() => JSON.parse(localStorage.getItem('ns_orders') || '[]'));
+    const [cart, setCart] = useState(() => JSON.parse(localStorage.getItem('ns_cart') || '[]'));
+    const [showCart, setShowCart] = useState(false);
     const [adminTab, setAdminTab] = useState('orders'); // 'orders' | 'analytics'
     const [analyticsData, setAnalyticsData] = useState([]);
 
@@ -40,7 +42,8 @@ function App() {
     useEffect(() => {
         trackPageView('Home');
         localStorage.setItem('ns_orders', JSON.stringify(orders));
-    }, [orders]);
+        localStorage.setItem('ns_cart', JSON.stringify(cart));
+    }, [orders, cart]);
 
     const filteredProducts = activeCategory === 'All'
         ? productsData
@@ -80,24 +83,43 @@ function App() {
         toast('Logged out safely');
     };
 
-    const initiateCheckout = (product) => {
-        setSelectedProduct(product);
+    const addToCart = (product) => {
+        const existing = cart.find(item => item.id === product.id);
+        if (existing) {
+            setCart(cart.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item));
+        } else {
+            setCart([...cart, { ...product, quantity: 1 }]);
+        }
+        toast.success(`Added ${product.name} to cart`, { icon: '🛒' });
+        trackEvent('add_to_cart', { product: product.name });
+    };
+
+    const removeFromCart = (productId) => {
+        setCart(cart.filter(item => item.id !== productId));
+    };
+
+    const initiateCheckout = (items) => {
+        // items can be a single product (direct buy) or the whole cart
+        const productList = Array.isArray(items) ? items : [items];
+        setSelectedProduct(productList);
         setShowCheckout(true);
-        trackEvent('checkout_started', { product: product.name });
+        setShowCart(false);
+        trackEvent('checkout_started', { itemsCount: productList.length });
     };
 
     const handleOrderSubmit = (formData) => {
         const isSample = formData.orderType === 'sample';
-        const finalAmount = isSample ? 0 : DISCOUNTED_PRICE;
+        const rawTotal = selectedProduct.reduce((sum, item) => sum + (BASE_PRICE * (item.quantity || 1)), 0);
+        const finalAmount = isSample ? 0 : Math.round(rawTotal * (1 - DISCOUNT_RATE));
         const orderId = `NS-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
         // Finalize order with tracking status
         const newOrder = {
             id: orderId,
-            product: selectedProduct.name,
+            products: selectedProduct.map(p => ({ name: p.name, qty: p.quantity || 1 })),
             customer: formData,
             amount: finalAmount,
-            status: isSample ? 'Confirmed' : 'Processing', // Samples are auto-confirmed
+            status: isSample ? 'Confirmed' : 'Processing',
             type: formData.orderType || 'regular',
             timestamp: new Date().toISOString()
         };
@@ -137,6 +159,7 @@ function App() {
             }
         ).then(() => {
             setOrders([{ ...newOrder, status: 'Confirmed' }, ...orders]);
+            setCart([]); // Clear cart after success
             confetti({
                 particleCount: 150,
                 spread: 70,
@@ -147,7 +170,7 @@ function App() {
         });
 
         setShowCheckout(false);
-        trackEvent('order_placed', { orderId, product: selectedProduct.name, amount: finalAmount });
+        trackEvent('order_placed', { orderId, itemsCount: selectedProduct.length, amount: finalAmount });
     };
 
     const updateOrderStatus = (orderId, newStatus) => {
@@ -173,6 +196,19 @@ function App() {
                     </motion.div>
                     <nav style={{ display: 'flex', gap: '30px', fontWeight: 600, alignItems: 'center', color: 'var(--color-forest)' }}>
                         <span className="nav-link" onClick={() => document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' })}>Catalog</span>
+
+                        <div
+                            style={{ position: 'relative', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                            onClick={() => setShowCart(true)}
+                        >
+                            <ShoppingCart size={22} />
+                            {cart.length > 0 && (
+                                <span style={{ position: 'absolute', top: '-8px', right: '-10px', background: '#ff4d4f', color: 'white', fontSize: '10px', width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
+                                    {cart.reduce((s, i) => s + i.quantity, 0)}
+                                </span>
+                            )}
+                        </div>
+
                         <div style={{ width: '1px', height: '20px', background: '#ddd' }} />
                         <span style={{ cursor: 'pointer', color: showAdmin ? 'var(--color-emerald)' : '#999' }} onClick={handleAdminToggle}>
                             {showAdmin ? <Activity size={20} /> : <Database size={20} />}
@@ -320,17 +356,63 @@ function App() {
                                             25% OFF
                                         </div>
                                     </div>
-                                    <button
-                                        className="btn-primary"
-                                        style={{ width: '100%' }}
-                                        onClick={() => initiateCheckout(product)}
-                                    >
-                                        Order Now
-                                    </button>
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <button
+                                            className="btn-outline"
+                                            style={{ flex: 1 }}
+                                            onClick={() => addToCart(product)}
+                                        >
+                                            Add to Cart
+                                        </button>
+                                        <button
+                                            className="btn-primary"
+                                            style={{ flex: 1 }}
+                                            onClick={() => initiateCheckout({ ...product, quantity: 1 })}
+                                        >
+                                            Buy Now
+                                        </button>
+                                    </div>
                                 </div>
                             </motion.div>
                         ))}
                     </motion.div>
+                </div>
+            </section>
+
+            {/* Quality Section with Second Video */}
+            <section style={{ padding: '100px 0', background: 'var(--color-forest)', color: 'white', overflow: 'hidden' }}>
+                <div className="premium-container">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '80px', flexWrap: 'wrap-reverse' }}>
+                        <div style={{ flex: '1 1 400px' }}>
+                            <div className="glass-effect" style={{ padding: '10px', borderRadius: '40px', background: 'rgba(255,255,255,0.1)' }}>
+                                <video autoPlay muted loop playsInline style={{ width: '100%', borderRadius: '30px', display: 'block' }}>
+                                    <source src="/media/kadhai-gravy.mp4" type="video/mp4" />
+                                </video>
+                            </div>
+                        </div>
+                        <div style={{ flex: '1 1 500px' }}>
+                            <h2 style={{ fontSize: '3.5rem', marginBottom: '30px', color: 'white' }}>Crafted for <br /><span style={{ color: 'var(--color-gold)' }}>Culinary Excellence.</span></h2>
+                            <p style={{ fontSize: '1.2rem', opacity: 0.9, lineHeight: '1.8', marginBottom: '40px' }}>
+                                Our powders aren't just for drinks. They are the secret weapon of chefs, providing intense flavor and natural color to gravies, sauces, and gourmet dishes without changing the texture.
+                            </p>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+                                <div style={{ display: 'flex', gap: '15px' }}>
+                                    <Zap color="var(--color-gold)" />
+                                    <div>
+                                        <h4 style={{ color: 'white' }}>Instant Dissolve</h4>
+                                        <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>No lumps, just pure flavor.</p>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', gap: '15px' }}>
+                                    <CheckCircle color="var(--color-gold)" />
+                                    <div>
+                                        <h4 style={{ color: 'white' }}>Pro Grade</h4>
+                                        <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>Used in premium cloud kitchens.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -384,10 +466,13 @@ function App() {
                                                 <span>{order.id}</span>
                                                 <span style={{ color: 'var(--color-emerald)' }}>₹{order.amount}</span>
                                             </div>
-                                            <p style={{ fontWeight: 600, margin: '5px 0', display: 'flex', justifyContent: 'space-between' }}>
-                                                {order.product}
-                                                {order.type === 'sample' && <span style={{ background: '#eee', padding: '2px 8px', borderRadius: '10px', fontSize: '0.6rem' }}>SAMPLE</span>}
-                                            </p>
+                                            <div style={{ margin: '10px 0', fontSize: '0.8rem' }}>
+                                                {order.products?.map((p, i) => (
+                                                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                                        <span>{p.name} x {p.qty}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
                                             <p style={{ fontSize: '0.75rem', color: '#666' }}>{order.customer.fullName} | {order.customer.contact}</p>
                                             <p style={{ fontSize: '0.7rem', color: '#888' }}>{order.customer.houseNo}, {order.customer.locality}, {order.customer.pincode}</p>
 
@@ -466,6 +551,67 @@ function App() {
                 )}
             </AnimatePresence>
 
+            {/* Cart Drawer */}
+            <AnimatePresence>
+                {showCart && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setShowCart(false)}
+                        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(5px)', zIndex: 1500, display: 'flex', justifyContent: 'flex-right' }}
+                    >
+                        <motion.div
+                            initial={{ x: 400 }}
+                            animate={{ x: 0 }}
+                            exit={{ x: 400 }}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '100%', maxWidth: '400px', background: 'white', padding: '40px', boxShadow: '-10px 0 50px rgba(0,0,0,0.1)' }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+                                <h2 style={{ display: 'flex', alignItems: 'center', gap: '15px' }}><ShoppingCart /> Your Cart</h2>
+                                <button onClick={() => setShowCart(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.5rem' }}>✕</button>
+                            </div>
+
+                            {cart.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '60px 0' }}>
+                                    <ShoppingCart size={60} color="#ddd" style={{ marginBottom: '20px' }} />
+                                    <p style={{ color: '#999' }}>Your cart is empty.</p>
+                                    <button className="btn-primary" style={{ marginTop: '20px' }} onClick={() => setShowCart(false)}>Shop Now</button>
+                                </div>
+                            ) : (
+                                <>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '60vh', overflowY: 'auto', marginBottom: '30px', paddingRight: '10px' }}>
+                                        {cart.map(item => (
+                                            <div key={item.id} style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                                                <img src={item.image} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }} />
+                                                <div style={{ flex: 1 }}>
+                                                    <h4 style={{ fontSize: '0.9rem' }}>{item.name}</h4>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px' }}>
+                                                        <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--color-emerald)' }}>₹{DISCOUNTED_PRICE}</span>
+                                                        <span style={{ fontSize: '0.75rem', color: '#999' }}>x {item.quantity}</span>
+                                                    </div>
+                                                </div>
+                                                <button onClick={() => removeFromCart(item.id)} style={{ border: 'none', background: '#fff0f0', color: '#ff4d4f', padding: '8px', borderRadius: '10px', cursor: 'pointer' }}>✕</button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div style={{ borderTop: '1px solid #eee', paddingTop: '20px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 800, marginBottom: '20px' }}>
+                                            <span>Subtotal</span>
+                                            <span>₹{cart.reduce((s, i) => s + (DISCOUNTED_PRICE * i.quantity), 0)}</span>
+                                        </div>
+                                        <button className="btn-primary" style={{ width: '100%', padding: '18px' }} onClick={() => initiateCheckout(cart)}>
+                                            Checkout All Items
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Login Modal */}
             <AnimatePresence>
                 {showLogin && (
@@ -521,7 +667,12 @@ function App() {
                             style={{ background: 'white', padding: '30px', borderRadius: '30px', width: '100%', maxWidth: '500px' }}
                         >
                             <CheckoutForm
-                                amount={DISCOUNTED_PRICE}
+                                amount={selectedProduct ? (formData => {
+                                    const isSample = formData?.orderType === 'sample';
+                                    const rawTotal = selectedProduct.reduce((sum, item) => sum + (BASE_PRICE * (item.quantity || 1)), 0);
+                                    return isSample ? 0 : Math.round(rawTotal * (1 - DISCOUNT_RATE));
+                                })() : 0}
+                                items={selectedProduct}
                                 onSubmit={handleOrderSubmit}
                                 onCancel={() => setShowCheckout(false)}
                             />
