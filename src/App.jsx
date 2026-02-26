@@ -35,9 +35,22 @@ function App() {
     const [adminTab, setAdminTab] = useState('orders'); // 'orders' | 'analytics'
     const [analyticsData, setAnalyticsData] = useState([]);
 
-    const BASE_PRICE = 499;
+    const [selectedOptions, setSelectedOptions] = useState({});
+
     const DISCOUNT_RATE = 0.25;
-    const DISCOUNTED_PRICE = Math.round(BASE_PRICE * (1 - DISCOUNT_RATE));
+
+    const getProductPrice = (product) => {
+        const optionList = product.options || [{ size: '500g', price: 499 }];
+        const optIdx = selectedOptions[product.id] || 0;
+        const opt = optionList[optIdx] || optionList[0];
+        const basePrice = opt.price;
+        const discountedPrice = Math.round(basePrice * (1 - DISCOUNT_RATE));
+        return { basePrice, discountedPrice, size: opt.size };
+    };
+
+    const handleOptionChange = (productId, idx) => {
+        setSelectedOptions(prev => ({ ...prev, [productId]: idx }));
+    };
 
     useEffect(() => {
         trackPageView('Home');
@@ -84,14 +97,16 @@ function App() {
     };
 
     const addToCart = (product) => {
-        const existing = cart.find(item => item.id === product.id);
+        const { basePrice, discountedPrice, size } = getProductPrice(product);
+        const cartItemId = `${product.id}-${size}`;
+        const existing = cart.find(item => item.id === cartItemId);
         if (existing) {
-            setCart(cart.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item));
+            setCart(cart.map(item => item.id === cartItemId ? { ...item, quantity: item.quantity + 1 } : item));
         } else {
-            setCart([...cart, { ...product, quantity: 1 }]);
+            setCart([...cart, { ...product, id: cartItemId, originalId: product.id, quantity: 1, size, basePrice, discountedPrice }]);
         }
-        toast.success(`Added ${product.name} to cart`, { icon: '🛒' });
-        trackEvent('add_to_cart', { product: product.name });
+        toast.success(`Added ${product.name} (${size}) to cart`, { icon: '🛒' });
+        trackEvent('add_to_cart', { product: product.name, size });
     };
 
     const removeFromCart = (productId) => {
@@ -99,8 +114,13 @@ function App() {
     };
 
     const initiateCheckout = (items) => {
-        // items can be a single product (direct buy) or the whole cart
-        const productList = Array.isArray(items) ? items : [items];
+        let productList = [];
+        if (Array.isArray(items)) {
+            productList = items;
+        } else {
+            const { basePrice, discountedPrice, size } = getProductPrice(items);
+            productList = [{ ...items, id: `${items.id}-${size}`, originalId: items.id, quantity: 1, size, basePrice, discountedPrice }];
+        }
         setSelectedProduct(productList);
         setShowCheckout(true);
         setShowCart(false);
@@ -109,14 +129,14 @@ function App() {
 
     const handleOrderSubmit = (formData) => {
         const isSample = formData.orderType === 'sample';
-        const rawTotal = selectedProduct.reduce((sum, item) => sum + (BASE_PRICE * (item.quantity || 1)), 0);
+        const rawTotal = selectedProduct.reduce((sum, item) => sum + (item.basePrice * (item.quantity || 1)), 0);
         const finalAmount = isSample ? 0 : Math.round(rawTotal * (1 - DISCOUNT_RATE));
         const orderId = `NS-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
         // Finalize order with tracking status
         const newOrder = {
             id: orderId,
-            products: selectedProduct.map(p => ({ name: p.name, qty: p.quantity || 1 })),
+            products: selectedProduct.map(p => ({ name: p.name, size: p.size, qty: p.quantity || 1 })),
             customer: formData,
             amount: finalAmount,
             status: isSample ? 'Confirmed' : 'Processing',
@@ -349,11 +369,22 @@ function App() {
                                     <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '20px' }}>{sanitize(product.description)}</p>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                                         <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                            <span style={{ fontSize: '0.8rem', color: '#888', textDecoration: 'line-through' }}>₹{BASE_PRICE}</span>
-                                            <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-emerald)' }}>₹{DISCOUNTED_PRICE}</span>
+                                            <span style={{ fontSize: '0.8rem', color: '#888', textDecoration: 'line-through' }}>₹{getProductPrice(product).basePrice}</span>
+                                            <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-emerald)' }}>₹{getProductPrice(product).discountedPrice}</span>
                                         </div>
-                                        <div style={{ background: 'var(--color-emerald)', color: 'white', padding: '4px 10px', borderRadius: '50px', fontSize: '0.7rem', fontWeight: 700 }}>
-                                            25% OFF
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <select
+                                                value={selectedOptions[product.id] || 0}
+                                                onChange={(e) => handleOptionChange(product.id, parseInt(e.target.value))}
+                                                style={{ padding: '4px 8px', borderRadius: '8px', border: '1px solid #ddd', outline: 'none', background: 'white', fontSize: '0.8rem', cursor: 'pointer', maxWidth: '80px' }}
+                                            >
+                                                {(product.options || [{ size: '500g', price: 499 }]).map((opt, idx) => (
+                                                    <option key={idx} value={idx}>{opt.size}</option>
+                                                ))}
+                                            </select>
+                                            <div style={{ background: 'var(--color-emerald)', color: 'white', padding: '4px 8px', borderRadius: '50px', fontSize: '0.65rem', fontWeight: 700 }}>
+                                                25% OFF
+                                            </div>
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', gap: '10px' }}>
@@ -367,7 +398,7 @@ function App() {
                                         <button
                                             className="btn-primary"
                                             style={{ flex: 1 }}
-                                            onClick={() => initiateCheckout({ ...product, quantity: 1 })}
+                                            onClick={() => initiateCheckout(product)}
                                         >
                                             Buy Now
                                         </button>
@@ -469,7 +500,7 @@ function App() {
                                             <div style={{ margin: '10px 0', fontSize: '0.8rem' }}>
                                                 {order.products?.map((p, i) => (
                                                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                                        <span>{p.name} x {p.qty}</span>
+                                                        <span>{p.name} ({p.size || 'N/A'}) x {p.qty}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -586,9 +617,9 @@ function App() {
                                             <div key={item.id} style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                                                 <img src={item.image} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover' }} />
                                                 <div style={{ flex: 1 }}>
-                                                    <h4 style={{ fontSize: '0.9rem' }}>{item.name}</h4>
+                                                    <h4 style={{ fontSize: '0.9rem' }}>{item.name} ({item.size})</h4>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px' }}>
-                                                        <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--color-emerald)' }}>₹{DISCOUNTED_PRICE}</span>
+                                                        <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--color-emerald)' }}>₹{item.discountedPrice}</span>
                                                         <span style={{ fontSize: '0.75rem', color: '#999' }}>x {item.quantity}</span>
                                                     </div>
                                                 </div>
@@ -599,7 +630,7 @@ function App() {
                                     <div style={{ borderTop: '1px solid #eee', paddingTop: '20px' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 800, marginBottom: '20px' }}>
                                             <span>Subtotal</span>
-                                            <span>₹{cart.reduce((s, i) => s + (DISCOUNTED_PRICE * i.quantity), 0)}</span>
+                                            <span>₹{cart.reduce((s, i) => s + (i.discountedPrice * i.quantity), 0)}</span>
                                         </div>
                                         <button className="btn-primary" style={{ width: '100%', padding: '18px' }} onClick={() => initiateCheckout(cart)}>
                                             Checkout All Items
@@ -669,7 +700,7 @@ function App() {
                             <CheckoutForm
                                 amount={selectedProduct ? (formData => {
                                     const isSample = formData?.orderType === 'sample';
-                                    const rawTotal = selectedProduct.reduce((sum, item) => sum + (BASE_PRICE * (item.quantity || 1)), 0);
+                                    const rawTotal = selectedProduct.reduce((sum, item) => sum + (item.basePrice * (item.quantity || 1)), 0);
                                     return isSample ? 0 : Math.round(rawTotal * (1 - DISCOUNT_RATE));
                                 })() : 0}
                                 items={selectedProduct}
