@@ -22,10 +22,12 @@ export const trackEvent = (eventName, properties = {}) => {
     // 1. Console Logging (for debugging)
     console.log(`[Analytics] ${eventName}:`, eventData);
 
-    // 2. Persistence in SessionStorage (Internal tracking for current session)
-    const sessionLog = JSON.parse(sessionStorage.getItem('ns_analytics_log') || '[]');
-    sessionLog.push(eventData);
-    sessionStorage.setItem('ns_analytics_log', JSON.stringify(sessionLog));
+    // 2. Persistence in LocalStorage (Internal tracking for admin dashboard)
+    const log = JSON.parse(localStorage.getItem('ns_analytics_log') || '[]');
+    log.push(eventData);
+    // Keep only last 1000 events to prevent storage bloat
+    if (log.length > 1000) log.shift();
+    localStorage.setItem('ns_analytics_log', JSON.stringify(log));
 
     // 3. Integration Point
     // Example: window.gtag('event', eventName, properties);
@@ -35,6 +37,10 @@ export const trackPageView = (pageName) => {
     trackEvent('page_view', { page: pageName });
 };
 
-export const getSessionAnalytics = () => {
-    return JSON.parse(sessionStorage.getItem('ns_analytics_log') || '[]');
+export const getAnalytics = () => {
+    return JSON.parse(localStorage.getItem('ns_analytics_log') || '[]');
+};
+
+export const clearAnalytics = () => {
+    localStorage.removeItem('ns_analytics_log');
 };

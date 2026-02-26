@@ -4,9 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; img-src 'self' https://via.placeholder.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self'; video-src 'self';">
-  <link rel="icon" type="image/svg+xml" href="/src/assets/media/hari-kripa-logo-PaLxYu3Q.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    content="default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' https:; video-src 'self' data: blob:;">
+  <link rel="icon" type="image/png" href="/media/logo.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
   <title>NatureSip - Premium Organic Nutrition</title>
   <meta name="description"
     content="NatureSip (Hari-Kripa) offers 100% natural fruit and vegetable powders made with advanced Flash Drying technology. No sugar, no preservatives." />
@@ -19,6 +19,11 @@
 
 <body>
   <div id="root"></div>
+  <script>
+    if (location.protocol === 'http:' && !location.hostname.includes('localhost') && !location.hostname.includes('127.0.0.1')) {
+      location.replace(`https://${location.hostname}${location.port ? ':' + location.port : ''}${location.pathname}${location.search}${location.hash}`);
+    }
+  </script>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 

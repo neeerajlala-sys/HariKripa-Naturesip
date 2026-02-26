@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Leaf, Droplets, FlaskConical, Shovel, ChevronRight, Play, Database, Activity, Star, ShieldCheck, Zap, LogOut, Package, ClipboardList, CheckCircle, Truck, Info } from 'lucide-react';
+import { Leaf, Droplets, FlaskConical, Shovel, ChevronRight, Play, Database, Activity, Star, ShieldCheck, Zap, LogOut, Package, ClipboardList, CheckCircle, Truck, Info, BarChart3, Users, TrendingUp, ShoppingCart, Eye } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 import productsData from './data/products.json';
-import { trackEvent, trackPageView } from './utils/analytics';
+import { trackEvent, trackPageView, getAnalytics } from './utils/analytics';
 import CheckoutForm from './components/CheckoutForm';
 
 // Security Helper
@@ -30,6 +30,12 @@ function App() {
     const [showCheckout, setShowCheckout] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [orders, setOrders] = useState(() => JSON.parse(localStorage.getItem('ns_orders') || '[]'));
+    const [adminTab, setAdminTab] = useState('orders'); // 'orders' | 'analytics'
+    const [analyticsData, setAnalyticsData] = useState([]);
+
+    const BASE_PRICE = 499;
+    const DISCOUNT_RATE = 0.25;
+    const DISCOUNTED_PRICE = Math.round(BASE_PRICE * (1 - DISCOUNT_RATE));
 
     useEffect(() => {
         trackPageView('Home');
@@ -60,6 +66,9 @@ function App() {
     const handleAdminToggle = () => {
         if (isAdminAuthenticated) {
             setShowAdmin(!showAdmin);
+            if (!showAdmin) {
+                setAnalyticsData(getAnalytics());
+            }
         } else {
             setShowLogin(true);
         }
@@ -78,7 +87,8 @@ function App() {
     };
 
     const handleOrderSubmit = (formData) => {
-        const amount = 499; // Base price for simulation
+        const isSample = formData.orderType === 'sample';
+        const finalAmount = isSample ? 0 : DISCOUNTED_PRICE;
         const orderId = `NS-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
         // Finalize order with tracking status
@@ -86,35 +96,58 @@ function App() {
             id: orderId,
             product: selectedProduct.name,
             customer: formData,
-            amount: amount,
-            status: 'Processing', // Stages: Processing -> Confirmed -> Shipped -> Delivered
+            amount: finalAmount,
+            status: isSample ? 'Confirmed' : 'Processing', // Samples are auto-confirmed
+            type: formData.orderType || 'regular',
             timestamp: new Date().toISOString()
         };
 
-        // Simulate UPI Payment Redirect/Flow
-        const upiUrl = `upi://pay?pa=harikripa@upi&pn=NatureSip&am=${amount}&tn=Order_${orderId}&cu=INR`;
+        if (isSample) {
+            setOrders([newOrder, ...orders]);
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+            toast.success('Sample Request Received! We will contact you soon.');
+            setShowCheckout(false);
+            return;
+        }
+
+        // Real Verification Simulation
+        const upiUrl = `upi://pay?pa=harikripa@upi&pn=NatureSip&am=${finalAmount}&tn=Order_${orderId}&cu=INR`;
 
         toast.promise(
-            new Promise((resolve) => {
-                setTimeout(() => {
-                    setOrders([newOrder, ...orders]);
-                    confetti({
-                        particleCount: 150,
-                        spread: 70,
-                        origin: { y: 0.6 }
-                    });
-                    resolve();
-                }, 2000);
+            new Promise((resolve, reject) => {
+                // Simulate a more robust verification process
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 20;
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        // 90% success rate for simulation
+                        Math.random() > 0.1 ? resolve() : reject(new Error('Verification failed'));
+                    }
+                }, 500);
             }),
             {
-                loading: 'Verifying UPI Payment...',
-                success: 'Payment Confirmed! Your order is being processed.',
-                error: 'Payment failed. Please try again.',
+                loading: `Verifying Payment of ₹${finalAmount}...`,
+                success: 'Payment Verified & Order Confirmed!',
+                error: (err) => `Payment failed: ${err.message}`,
             }
-        );
+        ).then(() => {
+            setOrders([{ ...newOrder, status: 'Confirmed' }, ...orders]);
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }).catch(() => {
+            // Log failure or handle retry
+        });
 
         setShowCheckout(false);
-        trackEvent('order_placed', { orderId, product: selectedProduct.name });
+        trackEvent('order_placed', { orderId, product: selectedProduct.name, amount: finalAmount });
     };
 
     const updateOrderStatus = (orderId, newStatus) => {
@@ -135,7 +168,7 @@ function App() {
                         style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
                         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                     >
-                        <img src="/src/assets/media/hari-kripa-logo-PaLxYu3Q.png" alt="NatureSip Logo" style={{ height: '40px' }} />
+                        <img src="/media/logo.png" alt="NatureSip Logo" style={{ height: '40px' }} />
                         <span style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--color-forest)', letterSpacing: '-0.5px' }}>NatureSip</span>
                     </motion.div>
                     <nav style={{ display: 'flex', gap: '30px', fontWeight: 600, alignItems: 'center', color: 'var(--color-forest)' }}>
@@ -153,7 +186,7 @@ function App() {
             <section style={{
                 minHeight: '100vh',
                 paddingTop: '120px',
-                background: `radial-gradient(circle at top right, rgba(45, 90, 39, 0.05), transparent), url('/src/assets/media/hero-bg-DTUELamw.jpg')`,
+                background: `radial-gradient(circle at top right, rgba(45, 90, 39, 0.05), transparent), url('/media/hero-bg.jpg')`,
                 backgroundSize: 'cover',
                 display: 'flex',
                 alignItems: 'center',
@@ -196,7 +229,7 @@ function App() {
                                             if (e.key === 'Enter') {
                                                 const order = orders.find(o => o.id === e.target.value.toUpperCase());
                                                 if (order) {
-                                                    toast.success(`Order ${order.id}: ${order.status}`, { icon: <Package /> });
+                                                    toast.success(`Order ${order.id}: ${order.status} (${order.type || 'regular'})`, { icon: <Package /> });
                                                 } else {
                                                     toast.error('Order ID not found');
                                                 }
@@ -217,7 +250,7 @@ function App() {
                         >
                             <div className="glass-effect" style={{ padding: '15px', borderRadius: '40px', boxShadow: 'var(--shadow-premium)', overflow: 'hidden' }}>
                                 <video autoPlay muted loop playsInline style={{ width: '100%', borderRadius: '25px', display: 'block' }}>
-                                    <source src="/src/assets/media/tablet-yellow-Dv1BcmVm.mp4" type="video/mp4" />
+                                    <source src="/media/intro-video.mp4" type="video/mp4" />
                                 </video>
                             </div>
                         </motion.div>
@@ -278,6 +311,15 @@ function App() {
                                 <div style={{ padding: '25px' }}>
                                     <h3 style={{ color: 'var(--color-forest)', marginBottom: '10px' }}>{sanitize(product.name)}</h3>
                                     <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '20px' }}>{sanitize(product.description)}</p>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                            <span style={{ fontSize: '0.8rem', color: '#888', textDecoration: 'line-through' }}>₹{BASE_PRICE}</span>
+                                            <span style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-emerald)' }}>₹{DISCOUNTED_PRICE}</span>
+                                        </div>
+                                        <div style={{ background: 'var(--color-emerald)', color: 'white', padding: '4px 10px', borderRadius: '50px', fontSize: '0.7rem', fontWeight: 700 }}>
+                                            25% OFF
+                                        </div>
+                                    </div>
                                     <button
                                         className="btn-primary"
                                         style={{ width: '100%' }}
@@ -314,44 +356,110 @@ function App() {
                         }}
                     >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}><ClipboardList /> Admin Orders</h3>
-                            <button onClick={() => setShowAdmin(false)} style={{ border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
+                            <div style={{ display: 'flex', gap: '15px' }}>
+                                <h3
+                                    onClick={() => setAdminTab('orders')}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: adminTab === 'orders' ? 'var(--color-forest)' : '#ccc', fontSize: '1.2rem' }}
+                                >
+                                    <ClipboardList size={20} /> Orders
+                                </h3>
+                                <h3
+                                    onClick={() => setAdminTab('analytics')}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', color: adminTab === 'analytics' ? 'var(--color-forest)' : '#ccc', fontSize: '1.2rem' }}
+                                >
+                                    <BarChart3 size={20} /> Analytics
+                                </h3>
+                            </div>
+                            <button onClick={() => setShowAdmin(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2rem' }}>✕</button>
                         </div>
 
-                        {orders.length === 0 ? (
-                            <p style={{ textAlign: 'center', color: '#999', padding: '40px 0' }}>No orders yet.</p>
-                        ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                {orders.map(order => (
-                                    <div key={order.id} style={{ padding: '15px', border: '1px solid #eee', borderRadius: '15px' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '0.8rem' }}>
-                                            <span>{order.id}</span>
-                                            <span style={{ color: 'var(--color-emerald)' }}>₹{order.amount}</span>
-                                        </div>
-                                        <p style={{ fontWeight: 600, margin: '5px 0' }}>{order.product}</p>
-                                        <p style={{ fontSize: '0.75rem', color: '#666' }}>{order.customer.fullName} | {order.customer.contact}</p>
-                                        <p style={{ fontSize: '0.7rem', color: '#888' }}>{order.customer.houseNo}, {order.customer.locality}, {order.customer.pincode}</p>
+                        {adminTab === 'orders' ? (
+                            orders.length === 0 ? (
+                                <p style={{ textAlign: 'center', color: '#999', padding: '40px 0' }}>No orders yet.</p>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    {orders.map(order => (
+                                        <div key={order.id} style={{ padding: '15px', border: '1px solid #eee', borderRadius: '15px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '0.8rem' }}>
+                                                <span>{order.id}</span>
+                                                <span style={{ color: 'var(--color-emerald)' }}>₹{order.amount}</span>
+                                            </div>
+                                            <p style={{ fontWeight: 600, margin: '5px 0', display: 'flex', justifyContent: 'space-between' }}>
+                                                {order.product}
+                                                {order.type === 'sample' && <span style={{ background: '#eee', padding: '2px 8px', borderRadius: '10px', fontSize: '0.6rem' }}>SAMPLE</span>}
+                                            </p>
+                                            <p style={{ fontSize: '0.75rem', color: '#666' }}>{order.customer.fullName} | {order.customer.contact}</p>
+                                            <p style={{ fontSize: '0.7rem', color: '#888' }}>{order.customer.houseNo}, {order.customer.locality}, {order.customer.pincode}</p>
 
-                                        <div style={{ marginTop: '10px', display: 'flex', gap: '5px' }}>
-                                            {['Confirmed', 'Shipped', 'Delivered'].map(s => (
-                                                <button
-                                                    key={s}
-                                                    onClick={() => updateOrderStatus(order.id, s)}
-                                                    style={{
-                                                        fontSize: '0.6rem',
-                                                        padding: '4px 8px',
-                                                        borderRadius: '10px',
-                                                        border: '1px solid #eee',
-                                                        background: order.status === s ? 'var(--color-forest)' : 'white',
-                                                        color: order.status === s ? 'white' : '#666'
-                                                    }}
-                                                >
-                                                    {s}
-                                                </button>
-                                            ))}
+                                            <div style={{ marginTop: '10px', display: 'flex', gap: '5px' }}>
+                                                {['Confirmed', 'Shipped', 'Delivered'].map(s => (
+                                                    <button
+                                                        key={s}
+                                                        onClick={() => updateOrderStatus(order.id, s)}
+                                                        style={{
+                                                            fontSize: '0.6rem',
+                                                            padding: '4px 8px',
+                                                            borderRadius: '10px',
+                                                            border: '1px solid #eee',
+                                                            background: order.status === s ? 'var(--color-forest)' : 'white',
+                                                            color: order.status === s ? 'white' : '#666'
+                                                        }}
+                                                    >
+                                                        {s}
+                                                    </button>
+                                                ))}
+                                            </div>
                                         </div>
+                                    ))}
+                                </div>
+                            )
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                {/* Analytics Summary Cards */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                    <div style={{ background: 'var(--color-cream)', padding: '15px', borderRadius: '15px', textAlign: 'center' }}>
+                                        <Eye size={20} color="var(--color-forest)" style={{ marginBottom: '5px' }} />
+                                        <div style={{ fontSize: '1.2rem', fontWeight: 800 }}>{analyticsData.filter(e => e.event === 'page_view').length}</div>
+                                        <div style={{ fontSize: '0.6rem', color: '#888', textTransform: 'uppercase' }}>Page Views</div>
                                     </div>
-                                ))}
+                                    <div style={{ background: 'var(--color-cream)', padding: '15px', borderRadius: '15px', textAlign: 'center' }}>
+                                        <ShoppingCart size={20} color="var(--color-emerald)" style={{ marginBottom: '5px' }} />
+                                        <div style={{ fontSize: '1.2rem', fontWeight: 800 }}>{orders.length}</div>
+                                        <div style={{ fontSize: '0.6rem', color: '#888', textTransform: 'uppercase' }}>Orders</div>
+                                    </div>
+                                    <div style={{ background: 'var(--color-cream)', padding: '15px', borderRadius: '15px', textAlign: 'center' }}>
+                                        <TrendingUp size={20} color="var(--color-gold)" style={{ marginBottom: '5px' }} />
+                                        <div style={{ fontSize: '1.2rem', fontWeight: 800 }}>
+                                            {analyticsData.filter(e => e.event === 'page_view').length > 0
+                                                ? ((orders.length / analyticsData.filter(e => e.event === 'page_view').length) * 100).toFixed(1)
+                                                : 0}%
+                                        </div>
+                                        <div style={{ fontSize: '0.6rem', color: '#888', textTransform: 'uppercase' }}>Conv. Rate</div>
+                                    </div>
+                                    <div style={{ background: 'var(--color-cream)', padding: '15px', borderRadius: '15px', textAlign: 'center' }}>
+                                        <Package size={20} color="#ff4d4f" style={{ marginBottom: '5px' }} />
+                                        <div style={{ fontSize: '1.2rem', fontWeight: 800 }}>{orders.filter(o => o.type === 'sample').length}</div>
+                                        <div style={{ fontSize: '0.6rem', color: '#888', textTransform: 'uppercase' }}>Samples</div>
+                                    </div>
+                                </div>
+
+                                {/* Event Log */}
+                                <div style={{ marginTop: '10px' }}>
+                                    <h4 style={{ fontSize: '0.9rem', marginBottom: '10px' }}>Recent Activity</h4>
+                                    <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        {analyticsData.slice().reverse().slice(0, 20).map((event, idx) => (
+                                            <div key={idx} style={{ fontSize: '0.7rem', padding: '8px', background: '#f9f9f9', borderRadius: '8px', borderLeft: '3px solid var(--color-emerald)' }}>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                                                    <span style={{ fontWeight: 700, color: 'var(--color-forest)' }}>{event.event.replace('_', ' ').toUpperCase()}</span>
+                                                    <span style={{ color: '#999' }}>{new Date(event.timestamp).toLocaleTimeString()}</span>
+                                                </div>
+                                                <div style={{ color: '#666', fontSize: '0.65rem' }}>
+                                                    {event.properties.product || event.properties.page || 'Interaction'}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </motion.div>
@@ -412,7 +520,11 @@ function App() {
                             animate={{ y: 0 }}
                             style={{ background: 'white', padding: '30px', borderRadius: '30px', width: '100%', maxWidth: '500px' }}
                         >
-                            <CheckoutForm amount={499} onSubmit={handleOrderSubmit} onCancel={() => setShowCheckout(false)} />
+                            <CheckoutForm
+                                amount={DISCOUNTED_PRICE}
+                                onSubmit={handleOrderSubmit}
+                                onCancel={() => setShowCheckout(false)}
+                            />
                         </motion.div>
                     </motion.div>
                 )}

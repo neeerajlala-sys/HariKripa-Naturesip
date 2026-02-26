@@ -2,7 +2,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { MapPin, Phone, Home, User, CreditCard } from 'lucide-react';
+import { MapPin, Phone, Home, User, CreditCard, Package } from 'lucide-react';
 
 const schema = z.object({
     fullName: z.string().min(3, "Full Name is required"),
@@ -10,17 +10,35 @@ const schema = z.object({
     houseNo: z.string().min(1, "House number is required"),
     locality: z.string().min(3, "Locality is required"),
     pincode: z.string().regex(/^[0-9]{6}$/, "Invalid Pincode (6 digits)"),
+    orderType: z.enum(['regular', 'sample']).default('regular'),
 });
 
 const CheckoutForm = ({ onSubmit, onCancel, amount }) => {
-    const { register, handleSubmit, formState: { errors } } = useForm({
-        resolver: zodResolver(schema)
+    const { register, handleSubmit, watch, formState: { errors } } = useForm({
+        resolver: zodResolver(schema),
+        defaultValues: { orderType: 'regular' }
     });
+
+    const orderType = watch('orderType');
 
     return (
         <div className="checkout-form">
-            <h2 style={{ marginBottom: '20px', color: 'var(--color-forest)', textAlign: 'center' }}>Secure Checkout</h2>
-            <p style={{ textAlign: 'center', marginBottom: '30px', color: '#666' }}>Amount to Pay: <span style={{ fontWeight: 800, color: 'var(--color-emerald)' }}>₹{amount}</span></p>
+            <h2 style={{ marginBottom: '10px', color: 'var(--color-forest)', textAlign: 'center' }}>Secure Checkout</h2>
+
+            <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', background: '#f8f9fa', padding: '5px', borderRadius: '15px' }}>
+                <label style={{ flex: 1, cursor: 'pointer', textAlign: 'center', padding: '10px', borderRadius: '12px', background: orderType === 'regular' ? 'white' : 'transparent', boxShadow: orderType === 'regular' ? '0 2px 10px rgba(0,0,0,0.05)' : 'none', fontWeight: 600, transition: '0.3s' }}>
+                    <input type="radio" value="regular" {...register('orderType')} style={{ display: 'none' }} />
+                    Full Pack
+                </label>
+                <label style={{ flex: 1, cursor: 'pointer', textAlign: 'center', padding: '10px', borderRadius: '12px', background: orderType === 'sample' ? 'white' : 'transparent', boxShadow: orderType === 'sample' ? '0 2px 10px rgba(0,0,0,0.05)' : 'none', fontWeight: 600, transition: '0.3s' }}>
+                    <input type="radio" value="sample" {...register('orderType')} style={{ display: 'none' }} />
+                    Sample Pack
+                </label>
+            </div>
+
+            <p style={{ textAlign: 'center', marginBottom: '30px', color: '#666' }}>
+                Amount to Pay: <span style={{ fontWeight: 800, color: 'var(--color-emerald)' }}>₹{orderType === 'sample' ? 0 : amount}</span>
+            </p>
 
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div style={{ marginBottom: '15px' }}>
@@ -87,7 +105,8 @@ const CheckoutForm = ({ onSubmit, onCancel, amount }) => {
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <button type="button" onClick={onCancel} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #ddd', background: 'none', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
                     <button type="submit" className="btn-primary" style={{ flex: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
-                        <CreditCard size={18} /> Pay via UPI
+                        {orderType === 'sample' ? <Package size={18} /> : <CreditCard size={18} />}
+                        {orderType === 'sample' ? 'Order Free Sample' : 'Pay via UPI'}
                     </button>
                 </div>
             </form>

@@ -3,7 +3,7 @@
         "id": "mango",
         "name": "Mango Powder",
         "category": "Fruits",
-        "image": "/src/assets/media/mango-powder-BgcNJaVt.jpg",
+        "image": "/media/mango.jpg",
         "description": "Premium ripe mangoes, flash-dried to retain every drop of flavor.",
         "nutrients": [
             "Vitamin A",
@@ -16,7 +16,7 @@
         "id": "banana",
         "name": "Banana Powder",
         "category": "Fruits",
-        "image": "/src/assets/media/banana-powder-BybAHML4.jpg",
+        "image": "/media/banana.jpg",
         "description": "Instant energy and natural sweetness in every scoop.",
         "nutrients": [
             "Magnesium",
@@ -28,7 +28,7 @@
         "id": "guava",
         "name": "Guava Powder",
         "category": "Fruits",
-        "image": "/src/assets/media/guava-powder-DUmXaABc.jpg",
+        "image": "/media/guava.jpg",
         "description": "Aromatic pink guava pulp transformed into ultra-fine nutrition.",
         "nutrients": [
             "Lycopene",
@@ -40,7 +40,7 @@
         "id": "litchi",
         "name": "Litchi Powder",
         "category": "Fruits",
-        "image": "/src/assets/media/litchi-powder-Duc3JBQL.jpg",
+        "image": "/media/litchi.jpg",
         "description": "The refreshing taste of pure litchi, preserved for long shelf life.",
         "nutrients": [
             "Copper",
@@ -51,7 +51,7 @@
         "id": "watermelon",
         "name": "Watermelon Powder",
         "category": "Fruits",
-        "image": "/src/assets/media/watermelon-powder-BbpzPaqa.jpg",
+        "image": "/media/watermelon.jpg",
         "description": "Pure hydration and citrulline, perfect for active lifestyles.",
         "nutrients": [
             "Hydration",
@@ -62,7 +62,7 @@
         "id": "jamun",
         "name": "Jamun Powder",
         "category": "Fruits",
-        "image": "/src/assets/media/jamun-powder-DZMdelxv.jpg",
+        "image": "/media/jamun.jpg",
         "description": "Health-focused powder known for sugar management and purity.",
         "nutrients": [
             "Antioxidants",
@@ -73,7 +73,7 @@
         "id": "tomato",
         "name": "Tomato Powder",
         "category": "Vegetables",
-        "image": "/src/assets/media/tomato-powder-DykHIhis.jpg",
+        "image": "/media/tomato.jpg",
         "description": "The essence of 14 ripe tomatoes in every 100g of powder.",
         "nutrients": [
             "Lycopene",
@@ -84,7 +84,7 @@
         "id": "garlic",
         "name": "Garlic Powder",
         "category": "Spices",
-        "image": "/src/assets/media/garlic-powder-BYbQbE4Z.jpg",
+        "image": "/media/garlic.jpg",
         "description": "100% pure garlic without the bitterness of high-heat drying.",
         "nutrients": [
             "Allicin",
@@ -95,7 +95,7 @@
         "id": "turmeric",
         "name": "Turmeric Powder",
         "category": "Spices",
-        "image": "/src/assets/media/turmeric-powder-BB6w8TdA.jpg",
+        "image": "/media/turmeric.jpg",
         "description": "High curcumin levels preserved through low-temp flash drying.",
         "nutrients": [
             "Curcumin",
@@ -106,7 +106,7 @@
         "id": "red-chilly",
         "name": "Red Chilly Powder",
         "category": "Spices",
-        "image": "/src/assets/media/red-chilly-powder-bW8a0M7X.jpg",
+        "image": "/media/red-chilly.jpg",
         "description": "Vibrant color and intense heat without artificial dyes.",
         "nutrients": [
             "Capsaicin",
@@ -117,7 +117,7 @@
         "id": "amla",
         "name": "Amla Tablets",
         "category": "Tablets",
-        "image": "/src/assets/media/amla-powder-CcBPIfF1.jpg",
+        "image": "/media/amla.jpg",
         "description": "Convenient immunity booster with massive doses of Vitamin C.",
         "nutrients": [
             "Vitamin C",
@@ -129,7 +129,7 @@
         "id": "honey",
         "name": "Dry Honey Powder",
         "category": "Specialty",
-        "image": "/src/assets/media/dry-honey-powder-CrvBcEXA.jpg",
+        "image": "/media/honey.jpg",
         "description": "Our secret ingredient: Pure honey in a convenient powder form.",
         "nutrients": [
             "Enzymes",
