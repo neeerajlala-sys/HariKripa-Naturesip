@@ -244,9 +244,10 @@ function App() {
             {/* Hero Section */}
             <section style={{
                 minHeight: '90vh',
-                paddingTop: '80px',
-                background: `radial-gradient(circle at top right, rgba(45, 140, 90, 0.05), transparent), #ffffff`,
+                paddingTop: '90px',
+                background: `radial-gradient(circle at top right, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.95)), url('/media/hero-bg.jpg')`,
                 backgroundSize: 'cover',
+                backgroundPosition: 'center',
                 display: 'flex',
                 alignItems: 'center',
                 position: 'relative',
@@ -343,24 +344,24 @@ function App() {
                         </div>
                     </div>
 
-                    <motion.div
-                        variants={containerVariants}
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '40px' }}
-                    >
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '40px' }}>
                         {filteredProducts.map(product => (
                             <motion.div
-                                key={product.id}
+                                key={`${product.id}-${activeCategory}`}
                                 className="lovable-card"
-                                variants={itemVariants}
+                                initial={{ opacity: 0, y: 15 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3 }}
                                 onMouseEnter={() => setHoveredProduct(product.id)}
                                 onMouseLeave={() => setHoveredProduct(null)}
                                 style={{ overflow: 'hidden' }}
                             >
                                 <div style={{ height: '260px', overflow: 'hidden', padding: '16px', paddingBottom: '0' }}>
-                                    <img src={product.image} alt={product.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }} />
+                                    {product.video ? (
+                                        <video src={product.video} autoPlay loop muted playsInline preload="metadata" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }} />
+                                    ) : (
+                                        <img src={product.image} alt={product.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }} />
+                                    )}
                                 </div>
                                 <div style={{ padding: '24px' }}>
                                     <h3 style={{ color: 'var(--color-forest)', marginBottom: '10px' }}>{sanitize(product.name)}</h3>
@@ -404,43 +405,6 @@ function App() {
                                 </div>
                             </motion.div>
                         ))}
-                    </motion.div>
-                </div>
-            </section>
-
-            {/* Quality Section with Second Video */}
-            <section style={{ padding: '100px 0', background: 'var(--color-forest)', color: 'white', overflow: 'hidden' }}>
-                <div className="premium-container">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '80px', flexWrap: 'wrap-reverse' }}>
-                        <div style={{ flex: '1 1 400px' }}>
-                            <div className="lovable-card" style={{ padding: '8px', background: 'white' }}>
-                                <video autoPlay muted loop playsInline preload="metadata" style={{ width: '100%', borderRadius: '16px', display: 'block' }}>
-                                    <source src="/media/kadhai-gravy.mp4" type="video/mp4" />
-                                </video>
-                            </div>
-                        </div>
-                        <div style={{ flex: '1 1 500px' }}>
-                            <h2 style={{ fontSize: '3.5rem', marginBottom: '30px', color: 'white' }}>Crafted for <br /><span style={{ color: 'var(--color-gold)' }}>Culinary Excellence.</span></h2>
-                            <p style={{ fontSize: '1.2rem', opacity: 0.9, lineHeight: '1.8', marginBottom: '40px' }}>
-                                Our powders aren't just for drinks. They are the secret weapon of chefs, providing intense flavor and natural color to gravies, sauces, and gourmet dishes without changing the texture.
-                            </p>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                                <div style={{ display: 'flex', gap: '15px' }}>
-                                    <Zap color="var(--color-gold)" />
-                                    <div>
-                                        <h4 style={{ color: 'white' }}>Instant Dissolve</h4>
-                                        <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>No lumps, just pure flavor.</p>
-                                    </div>
-                                </div>
-                                <div style={{ display: 'flex', gap: '15px' }}>
-                                    <CheckCircle color="var(--color-gold)" />
-                                    <div>
-                                        <h4 style={{ color: 'white' }}>Pro Grade</h4>
-                                        <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>Used in premium cloud kitchens.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </section>
