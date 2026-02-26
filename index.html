@@ -3,8 +3,14 @@
 
 <head>
   <meta charset="UTF-8" />
+  <script>
+    // Enforce HTTPS instantly before any other parsing happens
+    if (location.protocol === 'http:' && !location.hostname.includes('localhost') && !location.hostname.includes('127.0.0.1')) {
+      location.replace(`https://${location.hostname}${location.pathname}${location.search}${location.hash}`);
+    }
+  </script>
   <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' https:; video-src 'self' data: blob:;">
+    content="upgrade-insecure-requests; default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' https:; video-src 'self' data: blob:;">
   <link rel="icon" type="image/png" href="/media/logo.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
   <link rel="manifest" href="/manifest.webmanifest">
@@ -20,11 +26,6 @@
 
 <body>
   <div id="root"></div>
-  <script>
-    if (location.protocol === 'http:' && !location.hostname.includes('localhost') && !location.hostname.includes('127.0.0.1')) {
-      location.replace(`https://${location.hostname}${location.port ? ':' + location.port : ''}${location.pathname}${location.search}${location.hash}`);
-    }
-  </script>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 
